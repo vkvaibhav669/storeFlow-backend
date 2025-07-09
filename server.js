@@ -3,6 +3,9 @@ require('dotenv').config(); // Load environment variables from .env file
 const express = require('express');
 const connectDB = require('./config/db'); // Import DB connection function
 const bodyParser = require('body-parser'); // For parsing request bodies
+//const mongoExpress = require('mongo-express/lib/middleware');
+//const mongoExpressConfig = require('mongo-express/config.default.js');
+//mongoExpressConfig.mongodb.connectionString = process.env.MONGODB_URI;
 
 // Import API routes
 const authRoutes = require('./routes/authRoutes');
@@ -36,6 +39,9 @@ app.use('/api/approval-requests', approvalRequestRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/task-comments', taskCommentRoutes);
 app.use('/api/comment-replies', commentsRepliesRoutes);
+app.use('/api/tasks/filter', taskRoutes); // Filter tasks by project, department, or priority
+// Add this route for mongo-express admin (protect in production!)
+//app.use('/mongo-express', mongoExpress(mongoExpressConfig));
 // --- Basic Route for testing server status ---
 app.get('/', (req, res) => {
   res.send('API is running...');
