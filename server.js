@@ -16,7 +16,8 @@ const approvalRequestRoutes = require('./routes/approvalRequestRoutes');
 const taskRoutes = require('./routes/tasksRoutes');
 const taskCommentRoutes = require('./routes/taskCommentRoutes');
 const commentsRepliesRoutes = require('./routes/commentsReplies');
-
+const milestonesRoutes = require('./routes/milestonesRoutes'); // Import milestones routes if needed
+const storeRoutes = require('./routes/storeRouter');
 
 
 // Connect to the database
@@ -39,7 +40,10 @@ app.use('/api/approval-requests', approvalRequestRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/task-comments', taskCommentRoutes);
 app.use('/api/comment-replies', commentsRepliesRoutes);
-app.use('/api/tasks/filter', taskRoutes); // Filter tasks by project, department, or priority
+app.use('/api/tasks/filter', taskRoutes);
+app.use('/api/milestones', milestonesRoutes); // Add milestones routes if needed
+app.use('/api/store', storeRouter);
+// Filter tasks by project, department, or priority
 // Add this route for mongo-express admin (protect in production!)
 //app.use('/mongo-express', mongoExpress(mongoExpressConfig));
 // --- Basic Route for testing server status ---
