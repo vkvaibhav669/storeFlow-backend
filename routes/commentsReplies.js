@@ -3,8 +3,12 @@ const router = express.Router();
 const StoreProject = require('../models/StoreProject'); // Import StoreProject model
 const { protect, authorize } = require('../middleware/auth');
 
-// Add a reply to a comment on a task
-router.post('/:projectId/tasks/:taskId/comments/:commentId/replies',protect , async (req, res) => {
+/**
+ * @route POST /api/projects/:projectId/tasks/:taskId/comments/:commentId/replies
+ * @description Add a reply to a comment on a specific task of a project
+ * @access Private
+ */
+router.post('/:projectId/tasks/:taskId/comments/:commentId/replies', protect, async (req, res) => {
   try {
     const { projectId, taskId, commentId } = req.params;
     const replyData = req.body;
@@ -38,7 +42,5 @@ router.post('/:projectId/tasks/:taskId/comments/:commentId/replies',protect , as
     res.status(500).json({ message: 'Server error' });
   }
 });
-
-
 
 module.exports = router;

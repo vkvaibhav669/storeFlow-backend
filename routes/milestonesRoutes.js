@@ -3,7 +3,11 @@ const router = express.Router();
 const StoreProject = require('../models/StoreProject');
 const { protect } = require('../middleware/auth');
 
-// GET all milestones for a project
+/**
+ * @route GET /api/milestones/:projectId
+ * @description Get all milestones for a specific project
+ * @access Private
+ */
 router.get('/:projectId', protect, async (req, res) => {
   try {
     const project = await StoreProject.findById(req.params.projectId, 'milestones');
@@ -14,7 +18,11 @@ router.get('/:projectId', protect, async (req, res) => {
   }
 });
 
-// POST add a milestone to a project
+/**
+ * @route POST /api/milestones/:projectId
+ * @description Add a milestone to a specific project
+ * @access Private
+ */
 router.post('/:projectId', protect, async (req, res) => {
   try {
     const project = await StoreProject.findById(req.params.projectId);
@@ -28,7 +36,11 @@ router.post('/:projectId', protect, async (req, res) => {
   }
 });
 
-// PUT update a milestone by milestoneId in a project
+/**
+ * @route PUT /api/milestones/:projectId/:milestoneId
+ * @description Update a milestone by milestoneId in a specific project
+ * @access Private
+ */
 router.put('/:projectId/:milestoneId', protect, async (req, res) => {
   try {
     const project = await StoreProject.findById(req.params.projectId);
@@ -45,7 +57,11 @@ router.put('/:projectId/:milestoneId', protect, async (req, res) => {
   }
 });
 
-// DELETE a milestone by milestoneId in a project
+/**
+ * @route DELETE /api/milestones/:projectId/:milestoneId
+ * @description Delete a milestone by milestoneId in a specific project
+ * @access Private
+ */
 router.delete('/:projectId/:milestoneId', protect, async (req, res) => {
   try {
     const project = await StoreProject.findById(req.params.projectId);

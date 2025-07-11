@@ -3,7 +3,11 @@ const router = express.Router();
 const Store = require('../models/Store');
 const { protect } = require('../middleware/auth');
 
-// GET all stores (optionally populate fromProjectId)
+/**
+ * @route GET /api/store
+ * @description Get all stores (optionally populate fromProjectId)
+ * @access Private
+ */
 router.get('/', protect, async (req, res) => {
   try {
     const stores = await Store.find().populate('fromProjectId');
@@ -13,7 +17,11 @@ router.get('/', protect, async (req, res) => {
   }
 });
 
-// GET a single store by ID
+/**
+ * @route GET /api/store/:id
+ * @description Get a single store by ID
+ * @access Private
+ */
 router.get('/:id', protect, async (req, res) => {
   try {
     const store = await Store.findById(req.params.id).populate('fromProjectId');
@@ -24,7 +32,11 @@ router.get('/:id', protect, async (req, res) => {
   }
 });
 
-// POST create a new store
+/**
+ * @route POST /api/store
+ * @description Create a new store
+ * @access Private
+ */
 router.post('/', protect, async (req, res) => {
   try {
     const store = await Store.create(req.body);
@@ -34,7 +46,11 @@ router.post('/', protect, async (req, res) => {
   }
 });
 
-// PUT update a store by ID
+/**
+ * @route PUT /api/store/:id
+ * @description Update a store by ID
+ * @access Private
+ */
 router.put('/:id', protect, async (req, res) => {
   try {
     const store = await Store.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -45,7 +61,11 @@ router.put('/:id', protect, async (req, res) => {
   }
 });
 
-// DELETE a store by ID
+/**
+ * @route DELETE /api/store/:id
+ * @description Delete a store by ID
+ * @access Private
+ */
 router.delete('/:id', protect, async (req, res) => {
   try {
     const store = await Store.findByIdAndDelete(req.params.id);

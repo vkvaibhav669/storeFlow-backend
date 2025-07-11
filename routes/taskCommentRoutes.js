@@ -3,7 +3,11 @@ const router = express.Router();
 const StoreProject = require('../models/StoreProject');
 const { protect } = require('../middleware/auth');
 
-// Add a comment to a specific task of a project
+/**
+ * @route POST /api/projects/:projectId/tasks/:taskId/comments
+ * @description Add a comment to a specific task of a project
+ * @access Private
+ */
 router.post('/:projectId/tasks/:taskId/comments', protect, async (req, res) => {
   try {
     const { projectId, taskId } = req.params;
@@ -34,7 +38,11 @@ router.post('/:projectId/tasks/:taskId/comments', protect, async (req, res) => {
   }
 });
 
-// Get all comments for a specific task of a project
+/**
+ * @route GET /api/projects/:projectId/tasks/:taskId/comments
+ * @description Get all comments for a specific task of a project
+ * @access Private
+ */
 router.get('/:projectId/tasks/:taskId/comments', protect, async (req, res) => {
   try {
     const { projectId, taskId } = req.params;
