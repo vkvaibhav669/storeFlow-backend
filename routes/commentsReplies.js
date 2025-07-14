@@ -4,7 +4,9 @@ const StoreProject = require('../models/StoreProject'); // Import StoreProject m
 const { protect, authorize } = require('../middleware/auth');
 
 // Add a reply to a comment on a task
-router.post('/:projectId/tasks/:taskId/comments/:commentId/replies',protect , async (req, res) => {
+// Original: router.post('/:projectId/tasks/:taskId/comments/:commentId/replies',protect , async (req, res) => {
+// For testing - comment above and use below (remove protect middleware)
+router.post('/:projectId/tasks/:taskId/comments/:commentId/replies', async (req, res) => {
   try {
     const { projectId, taskId, commentId } = req.params;
     const replyData = req.body;

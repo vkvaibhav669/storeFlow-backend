@@ -9,10 +9,12 @@ const { protect, authorize } = require('../middleware/auth'); // Import authenti
  * @description Create a new approval request
  * @access Private/Member (or specific roles that can create requests)
  */
-router.post('/', protect, async (req, res) => {
-  // Automatically set requestorId and requestorName from authenticated user
-  req.body.requestorId = req.user._id;
-  req.body.requestorName = req.user.name;
+// Original: router.post('/', protect, async (req, res) => {
+// For testing - comment above and use below (remove protect middleware)
+router.post('/', async (req, res) => {
+  // Note: requestorId and requestorName will need to be manually set for testing without auth
+  // req.body.requestorId = req.user._id;
+  // req.body.requestorName = req.user.name;
 
   try {
     const newApprovalRequest = new ApprovalRequest(req.body);
@@ -32,10 +34,15 @@ router.post('/', protect, async (req, res) => {
  * @description Get all approval requests
  * @access Private
  */
-router.get('/', protect, async (req, res) => {
+// Original: router.get('/', protect, async (req, res) => {
+// For testing - comment above and use below (remove protect middleware)
+router.get('/', async (req, res) => {
+    // Note: Role-based filtering is disabled for testing
+    // if (req.user.role === 'Member') {
   try {
-    // Admins/SuperAdmins can see all, Members can only see their own requests or those they are approvers for
+    // For testing - fetch all approval requests without role-based filtering
     let query = {};
+    /*
     if (req.user.role === 'Member') {
       query = {
         $or: [
@@ -44,6 +51,7 @@ router.get('/', protect, async (req, res) => {
         ]
       };
     }
+    */
 
     const approvalRequests = await ApprovalRequest.find(query)
       .populate('requestorId', 'name email') // Populate requestor details
@@ -63,7 +71,9 @@ router.get('/', protect, async (req, res) => {
  * @description Get a single approval request by ID
  * @access Private
  */
-router.get('/:id', protect, async (req, res) => {
+// Original: router.get('/:id', protect, async (req, res) => {
+// For testing - comment above and use below (remove protect middleware)
+router.get('/:id', async (req, res) => {
   try {
     const approvalRequest = await ApprovalRequest.findById(req.params.id)
       .populate('requestorId', 'name email')
@@ -75,14 +85,14 @@ router.get('/:id', protect, async (req, res) => {
       return res.status(404).json({ message: 'Approval request not found' });
     }
 
-    // Authorization check: Admin/SuperAdmin can see any; Member can only see if they are requestor or approver
-    if (req.user.role === 'Admin' || req.user.role === 'SuperAdmin' ||
-        req.user._id.equals(approvalRequest.requestorId) ||
-        req.user._id.equals(approvalRequest.approverId)) {
+    // For testing - authorization check disabled
+    // if (req.user.role === 'Admin' || req.user.role === 'SuperAdmin' ||
+    //     req.user._id.equals(approvalRequest.requestorId) ||
+    //     req.user._id.equals(approvalRequest.approverId)) {
       res.status(200).json(approvalRequest);
-    } else {
-      res.status(403).json({ message: 'Not authorized to view this approval request' });
-    }
+    // } else {
+    //   res.status(403).json({ message: 'Not authorized to view this approval request' });
+    // }
   } catch (error) {
     console.error('Error fetching approval request:', error);
     res.status(500).json({ message: 'Server error' });
@@ -94,7 +104,9 @@ router.get('/:id', protect, async (req, res) => {
  * @description Update an approval request by ID
  * @access Private/Approver or Admin
  */
-router.put('/:id', protect, async (req, res) => {
+// Original: router.put('/:id', protect, async (req, res) => {
+// For testing - comment above and use below (remove protect middleware)
+router.put('/:id', async (req, res) => {
   try {
     let approvalRequest = await ApprovalRequest.findById(req.params.id);
 
@@ -102,7 +114,8 @@ router.put('/:id', protect, async (req, res) => {
       return res.status(404).json({ message: 'Approval request not found' });
     }
 
-    // Authorization check: Only the designated approver, Admin, or SuperAdmin can update status
+    // For testing - authorization check disabled
+    /*
     const isAuthorizedToUpdate = req.user.role === 'Admin' ||
                                  req.user.role === 'SuperAdmin' ||
                                  req.user._id.equals(approvalRequest.approverId);
@@ -110,6 +123,7 @@ router.put('/:id', protect, async (req, res) => {
     if (!isAuthorizedToUpdate) {
       return res.status(403).json({ message: 'Not authorized to update this approval request' });
     }
+    */
 
     // Only allow specific fields to be updated by approvers/admins (e.g., status, comments)
     // Requestors might be able to withdraw
@@ -124,7 +138,8 @@ router.put('/:id', protect, async (req, res) => {
     // Handle nested updates for comments (e.g., adding a new top-level comment)
     // For simplicity, this example assumes whole 'approvalComments' array replacement or specific update.
     // For adding a new comment or reply, you would need dedicated sub-routes.
-    // Example for adding a new top-level comment:
+    // For testing - user context disabled for new comments
+    /*
     if (req.body.newCommentText) {
         const newComment = {
             authorId: req.user._id,
@@ -137,6 +152,7 @@ router.put('/:id', protect, async (req, res) => {
         await approvalRequest.save(); // Save to apply the push
         // Then proceed with other updates if any
     }
+    */
 
     // Update the request with the allowed fields
     const updatedApprovalRequest = await ApprovalRequest.findByIdAndUpdate(
@@ -160,7 +176,9 @@ router.put('/:id', protect, async (req, res) => {
  * @description Delete an approval request by ID
  * @access Private/Admin
  */
-router.delete('/:id', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
+// Original: router.delete('/:id', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
+// For testing - comment above and use below (remove protect middleware)
+router.delete('/:id', async (req, res) => {
   try {
     const deletedApprovalRequest = await ApprovalRequest.findByIdAndDelete(req.params.id);
 
