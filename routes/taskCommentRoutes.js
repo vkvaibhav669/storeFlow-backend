@@ -8,7 +8,8 @@ const { protect } = require('../middleware/auth');
  * @description Add a comment to a specific task of a project
  * @access Private
  */
-router.post('/:projectId/tasks/:taskId/comments', protect, async (req, res) => {
+//router.post('/:projectId/tasks/:taskId/comments', protect, async (req, res) => {
+  router.post('/:projectId/tasks/:taskId/comments', protect, async (req, res) => {
   try {
     const { projectId, taskId } = req.params;
     const commentData = req.body;
@@ -43,7 +44,8 @@ router.post('/:projectId/tasks/:taskId/comments', protect, async (req, res) => {
  * @description Get all comments for a specific task of a project
  * @access Private
  */
-router.get('/:projectId/tasks/:taskId/comments', protect, async (req, res) => {
+//router.get('/:projectId/tasks/:taskId/comments', protect, async (req, res) => {
+  router.get('/:projectId/tasks/:taskId/comments',  async (req, res) => {
   try {
     const { projectId, taskId } = req.params;
 

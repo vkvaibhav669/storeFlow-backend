@@ -9,7 +9,8 @@ const { protect, authorize } = require('../middleware/auth'); // Import authenti
  * @description Create a new approval request
  * @access Private/Member (or specific roles that can create requests)
  */
-router.post('/', protect, async (req, res) => {
+//router.post('/', protect, async (req, res) => {
+router.post('/',  async (req, res) => {
   // Automatically set requestorId and requestorName from authenticated user
   req.body.requestorId = req.user._id;
   req.body.requestorName = req.user.name;
@@ -32,7 +33,8 @@ router.post('/', protect, async (req, res) => {
  * @description Get all approval requests
  * @access Private
  */
-router.get('/', protect, async (req, res) => {
+//router.get('/', protect, async (req, res) => {
+  router.get('/',  async (req, res) => {
   try {
     // Admins/SuperAdmins can see all, Members can only see their own requests or those they are approvers for
     let query = {};
@@ -63,7 +65,8 @@ router.get('/', protect, async (req, res) => {
  * @description Get a single approval request by ID
  * @access Private
  */
-router.get('/:id', protect, async (req, res) => {
+//router.get('/:id', protect, async (req, res) => {
+  router.get('/:id', async (req, res) => {
   try {
     const approvalRequest = await ApprovalRequest.findById(req.params.id)
       .populate('requestorId', 'name email')
@@ -94,7 +97,8 @@ router.get('/:id', protect, async (req, res) => {
  * @description Update an approval request by ID
  * @access Private/Approver or Admin
  */
-router.put('/:id', protect, async (req, res) => {
+//router.put('/:id', protect, async (req, res) => {
+  router.put('/:id', async (req, res) => {
   try {
     let approvalRequest = await ApprovalRequest.findById(req.params.id);
 
@@ -160,7 +164,8 @@ router.put('/:id', protect, async (req, res) => {
  * @description Delete an approval request by ID
  * @access Private/Admin
  */
-router.delete('/:id', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
+//router.delete('/:id', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
+  router.delete('/:id',  async (req, res) => {
   try {
     const deletedApprovalRequest = await ApprovalRequest.findByIdAndDelete(req.params.id);
 

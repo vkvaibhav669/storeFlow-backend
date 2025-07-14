@@ -9,7 +9,8 @@ const { protect, authorize } = require('../middleware/auth'); // Import authenti
  * @description Get all users (Admin/SuperAdmin only)
  * @access Private/Admin
  */
-router.get('/', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
+//router.get('/', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
+ router.get('/',  async (req, res) => { 
   try {
     // Fetch all users, excluding their passwords
     const users = await User.find({}).select('-password');
@@ -25,7 +26,8 @@ router.get('/', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
  * @description Get a single user by ID (Admin/SuperAdmin or self)
  * @access Private/Admin
  */
-router.get('/:id', protect, async (req, res) => {
+//router.get('/:id', protect, async (req, res) => {
+  router.get('/:id',  async (req, res) => {
   try {
     // Find user by ID, exclude password
     const user = await User.findById(req.params.id).select('-password');
@@ -51,7 +53,8 @@ router.get('/:id', protect, async (req, res) => {
  * @description Update a user by ID (Admin/SuperAdmin or self)
  * @access Private/Admin
  */
-router.put('/:id', protect, async (req, res) => {
+//router.put('/:id', protect, async (req, res) => {
+  router.put('/:id',  async (req, res) => {
   try {
     const { name, email, role } = req.body; // Password updates should be handled separately
 
@@ -97,7 +100,8 @@ router.put('/:id', protect, async (req, res) => {
  * @description Delete a user by ID (Admin/SuperAdmin only)
  * @access Private/Admin
  */
-router.delete('/:id', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
+//router.delete('/:id', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
+  router.delete('/:id',async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
 

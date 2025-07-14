@@ -9,7 +9,8 @@ const { protect, authorize } = require('../middleware/auth'); // Import authenti
  * @description Create a new store project
  * @access Private/Admin
  */
-router.post('/', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
+//router.post('/', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
+  router.post('/', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
   try {
     const newProject = new StoreProject(req.body);
     const savedProject = await newProject.save();
@@ -53,15 +54,18 @@ router.post('/', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => 
  * @description Get a single store project by ID
  * @access Private
  */
-router.get('/:id', protect, async (req, res) => {
+//.populate('discussion.authorId', 'name email');
+//.populate('tasks.comments.authorId', 'name email') 
+//router.get('/:id', protect, async (req, res) => {
+  router.get('/:id',  async (req, res) => {
   try {
     const project = await StoreProject.findById(req.params.id)
       .populate('members.userId', 'name email')
       .populate('tasks.assignedToId', 'name email')
-      .populate('tasks.comments.authorId', 'name email')
+      
       .populate('documents.uploadedById', 'name email')
       .populate('blockers.reportedById', 'name email')
-      .populate('discussion.authorId', 'name email');
+      
 
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });

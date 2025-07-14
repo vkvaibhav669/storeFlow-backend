@@ -10,7 +10,8 @@ const { protect } = require('../middleware/auth');
  * @access Private
  * Example: /api/tasks/filter?projectId=123&department=Sales&priority=High
  */
-router.post('/:projectId', protect, async (req, res) => {
+//router.post('/:projectId', protect, async (req, res) => {
+  router.post('/:projectId', async (req, res) => {
   try {
     const { projectId } = req.params;
     const taskData = req.body;
@@ -38,7 +39,8 @@ router.post('/:projectId', protect, async (req, res) => {
  * @access Private
  * Example: /api/tasks/filter?projectId=123&department=Sales&priority=High
  */
-router.get('/:projectId', protect, async (req, res) => {
+//router.get('/:projectId', protect, async (req, res) => {
+  router.get('/:projectId',  async (req, res) => {
   try {
     const { projectId } = req.params;
     const project = await StoreProject.findById(projectId, 'tasks');
@@ -58,7 +60,8 @@ router.get('/:projectId', protect, async (req, res) => {
  * @access Private
  * Example: /api/tasks/filter?projectId=123&department=Sales&priority=High
  */
-router.get('/filter', protect, async (req, res) => {
+//router.get('/filter', protect, async (req, res) => {
+  router.get('/filter', async (req, res) => {
   try {
     const { projectId, department, priority } = req.query;
 

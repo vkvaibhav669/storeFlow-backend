@@ -8,7 +8,8 @@ const { protect } = require('../middleware/auth');
  * @description Get all milestones for a specific project
  * @access Private
  */
-router.get('/:projectId', protect, async (req, res) => {
+//router.get('/:projectId', protect, async (req, res) => {
+  router.get('/:projectId',  async (req, res) => {
   try {
     const project = await StoreProject.findById(req.params.projectId, 'milestones');
     if (!project) return res.status(404).json({ message: 'Project not found' });
@@ -23,7 +24,8 @@ router.get('/:projectId', protect, async (req, res) => {
  * @description Add a milestone to a specific project
  * @access Private
  */
-router.post('/:projectId', protect, async (req, res) => {
+//router.post('/:projectId', protect, async (req, res) => {
+  router.post('/:projectId', protect, async (req, res) => {
   try {
     const project = await StoreProject.findById(req.params.projectId);
     if (!project) return res.status(404).json({ message: 'Project not found' });
@@ -41,7 +43,8 @@ router.post('/:projectId', protect, async (req, res) => {
  * @description Update a milestone by milestoneId in a specific project
  * @access Private
  */
-router.put('/:projectId/:milestoneId', protect, async (req, res) => {
+//router.put('/:projectId/:milestoneId', protect, async (req, res) => {
+  router.put('/:projectId/:milestoneId',  async (req, res) => {
   try {
     const project = await StoreProject.findById(req.params.projectId);
     if (!project) return res.status(404).json({ message: 'Project not found' });
@@ -62,7 +65,8 @@ router.put('/:projectId/:milestoneId', protect, async (req, res) => {
  * @description Delete a milestone by milestoneId in a specific project
  * @access Private
  */
-router.delete('/:projectId/:milestoneId', protect, async (req, res) => {
+//router.delete('/:projectId/:milestoneId', protect, async (req, res) => {
+  router.delete('/:projectId/:milestoneId',  async (req, res) => {
   try {
     const project = await StoreProject.findById(req.params.projectId);
     if (!project) return res.status(404).json({ message: 'Project not found' });

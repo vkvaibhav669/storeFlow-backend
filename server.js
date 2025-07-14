@@ -3,10 +3,7 @@ require('dotenv').config(); // Load environment variables from .env file
 const express = require('express');
 const connectDB = require('./config/db'); // Import DB connection function
 const bodyParser = require('body-parser'); // For parsing request bodies
-//const mongoExpress = require('mongo-express/lib/middleware');
-//const mongoExpressConfig = require('mongo-express/config.default.js');
-//mongoExpressConfig.mongodb.connectionString = process.env.MONGODB_URI;
-
+const cors = require('cors'); // For enabling CORS
 // Import API routes
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
@@ -17,14 +14,15 @@ const taskRoutes = require('./routes/tasksRoutes');
 const taskCommentRoutes = require('./routes/taskCommentRoutes');
 const commentsRepliesRoutes = require('./routes/commentsReplies');
 const milestonesRoutes = require('./routes/milestonesRoutes'); // Import milestones routes if needed
-const storeRoutes = require('./routes/storeRouter');
-
-
+const storeRouter = require('./routes/storeRouter');
 // Connect to the database
 connectDB();
-
 const app = express();
 const PORT = process.env.PORT || 8000;
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
 
 // Middleware to parse JSON request bodies
 app.use(express.json()); // Replaces bodyParser.json() in modern Express
@@ -50,6 +48,15 @@ app.use('/api/store', storeRouter);
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
+// const corsOptions = {
+//   origin: 'http://localhost:3000',
+//   credentials: true,
+//   allowedHeaders: ['Content-Type', 'Authorization'],
+//   methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+// };
+
+// app.use(cors(corsOptions));
+// app.options('*', cors(corsOptions)); 
 
 // --- Error Handling Middleware (Optional, but recommended for production) ---
 app.use((err, req, res, next) => {

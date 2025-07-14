@@ -8,7 +8,8 @@ const { protect, authorize } = require('../middleware/auth');
  * @description Add a reply to a comment on a specific task of a project
  * @access Private
  */
-router.post('/:projectId/tasks/:taskId/comments/:commentId/replies', protect, async (req, res) => {
+//router.post('/:projectId/tasks/:taskId/comments/:commentId/replies', protect, async (req, res) => {
+  router.post('/:projectId/tasks/:taskId/comments/:commentId/replies',  async (req, res) => {
   try {
     const { projectId, taskId, commentId } = req.params;
     const replyData = req.body;
