@@ -47,15 +47,17 @@ const StoreSchema = new mongoose.Schema({
   location: { type: String, required: true, trim: true },
   type: {
     type: String,
-    required: true,
-    enum: ["COCO", "FOFO"]
+    required: false,
+    enum: ["COCO", "FOFO"],
+    default: "COCO"
   },
   status: {
     type: String,
-    required: true,
-    enum: ["Operational", "Under Construction", "Planned"]
+    required: false,
+    enum: ["Operational", "Under Construction", "Planned"],
+    default: "Planned"
   },
-  openingDate: { type: Date, required: true },
+  openingDate: { type: Date, required: false, default: null },
   managerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Reference to User
   manager: { type: String }, // Denormalized manager name
   sqft: { type: Number },
