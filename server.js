@@ -6,7 +6,7 @@ const bodyParser = require('body-parser'); // For parsing request bodies
 //const mongoExpress = require('mongo-express/lib/middleware');
 //const mongoExpressConfig = require('mongo-express/config.default.js');
 //mongoExpressConfig.mongodb.connectionString = process.env.MONGODB_URI;
-
+const cors = require('cors');
 // Import API routes
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
@@ -24,6 +24,13 @@ connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 8000;
+
+app.use(cors()); // allows requests from any origin
+
+// OR restrict to a specific origin like this:
+app.use(cors({
+  origin: 'http://localhost:3000'
+}));
 
 // Middleware to parse JSON request bodies
 app.use(express.json()); // Replaces bodyParser.json() in modern Express
