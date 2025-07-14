@@ -9,7 +9,9 @@ const { protect, authorize } = require('../middleware/auth'); // Import authenti
  * @description Create a new store
  * @access Private/Admin
  */
-router.post('/', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
+// Original: router.post('/', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
+// For testing - comment above and use below (remove protect middleware)
+router.post('/', async (req, res) => {
   try {
     const newStore = new Store(req.body);
     const savedStore = await newStore.save();
@@ -29,7 +31,9 @@ router.post('/', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => 
  * @description Get all stores
  * @access Private
  */
-router.get('/', protect, async (req, res) => {
+// Original: router.get('/', protect, async (req, res) => {
+// For testing - comment above and use below (remove protect middleware)
+router.get('/', async (req, res) => {
   try {
     // Optionally populate manager details if needed (adjust based on your schema's needs)
     const stores = await Store.find({})
@@ -47,7 +51,9 @@ router.get('/', protect, async (req, res) => {
  * @description Get a single store by ID
  * @access Private
  */
-router.get('/:id', protect, async (req, res) => {
+// Original: router.get('/:id', protect, async (req, res) => {
+// For testing - comment above and use below (remove protect middleware)
+router.get('/:id', async (req, res) => {
   try {
     const store = await Store.findById(req.params.id)
       .populate('managerId', 'name email') // Populate manager details
@@ -71,7 +77,9 @@ router.get('/:id', protect, async (req, res) => {
  * @description Update a store by ID
  * @access Private/Admin
  */
-router.put('/:id', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
+// Original: router.put('/:id', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
+// For testing - comment above and use below (remove protect middleware)
+router.put('/:id', async (req, res) => {
   try {
     const updatedStore = await Store.findByIdAndUpdate(
       req.params.id,
@@ -97,7 +105,9 @@ router.put('/:id', protect, authorize('Admin', 'SuperAdmin'), async (req, res) =
  * @description Delete a store by ID
  * @access Private/Admin
  */
-router.delete('/:id', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
+// Original: router.delete('/:id', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
+// For testing - comment above and use below (remove protect middleware)
+router.delete('/:id', async (req, res) => {
   try {
     const deletedStore = await Store.findByIdAndDelete(req.params.id);
 

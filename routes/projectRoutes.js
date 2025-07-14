@@ -9,7 +9,9 @@ const { protect, authorize } = require('../middleware/auth'); // Import authenti
  * @description Create a new store project
  * @access Private/Admin
  */
-router.post('/', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
+// Original: router.post('/', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
+// For testing - comment above and use below (remove protect middleware)
+router.post('/', async (req, res) => {
   try {
     const newProject = new StoreProject(req.body);
     const savedProject = await newProject.save();
@@ -53,7 +55,9 @@ router.post('/', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => 
  * @description Get a single store project by ID
  * @access Private
  */
-router.get('/:id', protect, async (req, res) => {
+// Original: router.get('/:id', protect, async (req, res) => {
+// For testing - comment above and use below (remove protect middleware)
+router.get('/:id', async (req, res) => {
   try {
     const project = await StoreProject.findById(req.params.id)
       .populate('members.userId', 'name email')
@@ -78,7 +82,9 @@ router.get('/:id', protect, async (req, res) => {
  * @description Update a store project by ID
  * @access Private/Admin
  */
-router.put('/:id', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
+// Original: router.put('/:id', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
+// For testing - comment above and use below (remove protect middleware)
+router.put('/:id', async (req, res) => {
   try {
     const updatedProject = await StoreProject.findByIdAndUpdate(
       req.params.id,
@@ -104,7 +110,9 @@ router.put('/:id', protect, authorize('Admin', 'SuperAdmin'), async (req, res) =
  * @description Delete a store project by ID
  * @access Private/Admin
  */
-router.delete('/:id', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
+// Original: router.delete('/:id', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
+// For testing - comment above and use below (remove protect middleware)
+router.delete('/:id', async (req, res) => {
   try {
     const deletedProject = await StoreProject.findByIdAndDelete(req.params.id);
 

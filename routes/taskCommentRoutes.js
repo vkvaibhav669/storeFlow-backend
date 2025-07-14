@@ -4,7 +4,9 @@ const StoreProject = require('../models/StoreProject');
 const { protect } = require('../middleware/auth');
 
 // Add a comment to a specific task of a project
-router.post('/:projectId/tasks/:taskId/comments', protect, async (req, res) => {
+// Original: router.post('/:projectId/tasks/:taskId/comments', protect, async (req, res) => {
+// For testing - comment above and use below (remove protect middleware)
+router.post('/:projectId/tasks/:taskId/comments', async (req, res) => {
   try {
     const { projectId, taskId } = req.params;
     const commentData = req.body;
@@ -35,7 +37,9 @@ router.post('/:projectId/tasks/:taskId/comments', protect, async (req, res) => {
 });
 
 // Get all comments for a specific task of a project
-router.get('/:projectId/tasks/:taskId/comments', protect, async (req, res) => {
+// Original: router.get('/:projectId/tasks/:taskId/comments', protect, async (req, res) => {
+// For testing - comment above and use below (remove protect middleware)
+router.get('/:projectId/tasks/:taskId/comments', async (req, res) => {
   try {
     const { projectId, taskId } = req.params;
 
