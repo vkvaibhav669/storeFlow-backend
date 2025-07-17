@@ -1,7 +1,13 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const StoreProject = require('../models/StoreProject');
 const { protect } = require('../middleware/auth');
+
+// Utility function to validate ObjectId
+const isValidObjectId = (id) => {
+  return mongoose.Types.ObjectId.isValid(id);
+};
 
 // Add a new task to a project
 /**
@@ -16,6 +22,13 @@ router.post('/:projectId', async (req, res) => {
   try {
     const { projectId } = req.params;
     const taskData = req.body;
+
+    // Validate projectId is a valid ObjectId
+    if (!isValidObjectId(projectId)) {
+      return res.status(400).json({ 
+        message: 'Invalid project ID format. Expected a valid ObjectId but received: ' + projectId 
+      });
+    }
 
     const project = await StoreProject.findById(projectId);
     if (!project) {
@@ -45,6 +58,14 @@ router.post('/:projectId', async (req, res) => {
 router.get('/:projectId', async (req, res) => {
   try {
     const { projectId } = req.params;
+    
+    // Validate projectId is a valid ObjectId
+    if (!isValidObjectId(projectId)) {
+      return res.status(400).json({ 
+        message: 'Invalid project ID format. Expected a valid ObjectId but received: ' + projectId 
+      });
+    }
+    
     const project = await StoreProject.findById(projectId, 'tasks');
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });

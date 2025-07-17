@@ -1,7 +1,13 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const StoreProject = require('../models/StoreProject');
 const { protect } = require('../middleware/auth');
+
+// Utility function to validate ObjectId
+const isValidObjectId = (id) => {
+  return mongoose.Types.ObjectId.isValid(id);
+};
 
 // Add a comment to a specific task of a project
 // Original: router.post('/:projectId/tasks/:taskId/comments', protect, async (req, res) => {
@@ -10,6 +16,20 @@ router.post('/:projectId/tasks/:taskId/comments', async (req, res) => {
   try {
     const { projectId, taskId } = req.params;
     const commentData = req.body;
+
+    // Validate projectId is a valid ObjectId
+    if (!isValidObjectId(projectId)) {
+      return res.status(400).json({ 
+        message: 'Invalid project ID format. Expected a valid ObjectId but received: ' + projectId 
+      });
+    }
+
+    // Validate taskId is a valid ObjectId
+    if (!isValidObjectId(taskId)) {
+      return res.status(400).json({ 
+        message: 'Invalid task ID format. Expected a valid ObjectId but received: ' + taskId 
+      });
+    }
 
     // Find the project
     const project = await StoreProject.findById(projectId);
@@ -42,6 +62,20 @@ router.post('/:projectId/tasks/:taskId/comments', async (req, res) => {
 router.get('/:projectId/tasks/:taskId/comments', async (req, res) => {
   try {
     const { projectId, taskId } = req.params;
+
+    // Validate projectId is a valid ObjectId
+    if (!isValidObjectId(projectId)) {
+      return res.status(400).json({ 
+        message: 'Invalid project ID format. Expected a valid ObjectId but received: ' + projectId 
+      });
+    }
+
+    // Validate taskId is a valid ObjectId
+    if (!isValidObjectId(taskId)) {
+      return res.status(400).json({ 
+        message: 'Invalid task ID format. Expected a valid ObjectId but received: ' + taskId 
+      });
+    }
 
     // Find the project
     const project = await StoreProject.findById(projectId);

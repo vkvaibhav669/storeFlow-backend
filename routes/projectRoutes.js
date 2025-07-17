@@ -1,8 +1,14 @@
 // routes/projectRoutes.js
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const StoreProject = require('../models/StoreProject'); // Import StoreProject model
 const { protect, authorize } = require('../middleware/auth'); // Import authentication middleware
+
+// Utility function to validate ObjectId
+const isValidObjectId = (id) => {
+  return mongoose.Types.ObjectId.isValid(id);
+};
 
 /**
  * @route POST /api/projects
@@ -59,6 +65,13 @@ router.post('/', async (req, res) => {
 // For testing - comment above and use below (remove protect middleware)
 router.get('/:id', async (req, res) => {
   try {
+    // Validate id is a valid ObjectId
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ 
+        message: 'Invalid project ID format. Expected a valid ObjectId but received: ' + req.params.id 
+      });
+    }
+
     const project = await StoreProject.findById(req.params.id)
       .populate('members.userId', 'name email')
       .populate('tasks.assignedToId', 'name email')
@@ -86,6 +99,13 @@ router.get('/:id', async (req, res) => {
 // For testing - comment above and use below (remove protect middleware)
 router.put('/:id', async (req, res) => {
   try {
+    // Validate id is a valid ObjectId
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ 
+        message: 'Invalid project ID format. Expected a valid ObjectId but received: ' + req.params.id 
+      });
+    }
+
     const updatedProject = await StoreProject.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -114,6 +134,13 @@ router.put('/:id', async (req, res) => {
 // For testing - comment above and use below (remove protect middleware)
 router.delete('/:id', async (req, res) => {
   try {
+    // Validate id is a valid ObjectId
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ 
+        message: 'Invalid project ID format. Expected a valid ObjectId but received: ' + req.params.id 
+      });
+    }
+
     const deletedProject = await StoreProject.findByIdAndDelete(req.params.id);
 
     if (!deletedProject) {

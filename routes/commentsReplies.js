@@ -1,7 +1,13 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const StoreProject = require('../models/StoreProject'); // Import StoreProject model
 const { protect, authorize } = require('../middleware/auth');
+
+// Utility function to validate ObjectId
+const isValidObjectId = (id) => {
+  return mongoose.Types.ObjectId.isValid(id);
+};
 
 // Add a reply to a comment on a task
 // Original: router.post('/:projectId/tasks/:taskId/comments/:commentId/replies',protect , async (req, res) => {
@@ -10,6 +16,27 @@ router.post('/:projectId/tasks/:taskId/comments/:commentId/replies', async (req,
   try {
     const { projectId, taskId, commentId } = req.params;
     const replyData = req.body;
+
+    // Validate projectId is a valid ObjectId
+    if (!isValidObjectId(projectId)) {
+      return res.status(400).json({ 
+        message: 'Invalid project ID format. Expected a valid ObjectId but received: ' + projectId 
+      });
+    }
+
+    // Validate taskId is a valid ObjectId
+    if (!isValidObjectId(taskId)) {
+      return res.status(400).json({ 
+        message: 'Invalid task ID format. Expected a valid ObjectId but received: ' + taskId 
+      });
+    }
+
+    // Validate commentId is a valid ObjectId
+    if (!isValidObjectId(commentId)) {
+      return res.status(400).json({ 
+        message: 'Invalid comment ID format. Expected a valid ObjectId but received: ' + commentId 
+      });
+    }
 
     // Find the project and task
     const project = await StoreProject.findById(projectId);
