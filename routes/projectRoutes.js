@@ -41,12 +41,19 @@ router.post('/', async (req, res) => {
       .populate('tasks.assignedToId', 'name email') // Populate task assignees
       .populate('documents.uploadedById', 'name email') // Populate document uploaders
       .populate('blockers.reportedById', 'name email') // Populate blocker reporters
+      .lean(); // Use lean() for better performance and cleaner JSON output
       
+    // Ensure each project has both _id and id fields properly set
+    const projectsWithIds = projects.map(project => ({
+      ...project,
+      id: project._id.toString(),
+      _id: project._id.toString()
+    }));
 
-    res.status(200).json(projects);
+    res.status(200).json(projectsWithIds);
   } catch (error) {
     console.error('Error fetching projects:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
@@ -59,6 +66,17 @@ router.post('/', async (req, res) => {
 // For testing - comment above and use below (remove protect middleware)
 router.get('/:id', async (req, res) => {
   try {
+    // Validate the ID parameter
+    if (!req.params.id || req.params.id === 'undefined' || req.params.id === 'null') {
+      return res.status(400).json({ message: 'Invalid project ID provided' });
+    }
+    
+    // Validate ObjectId format
+    const mongoose = require('mongoose');
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid project ID format' });
+    }
+
     const project = await StoreProject.findById(req.params.id)
       .populate('members.userId', 'name email')
       .populate('tasks.assignedToId', 'name email')
@@ -70,10 +88,22 @@ router.get('/:id', async (req, res) => {
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
     }
-    res.status(200).json(project);
+    
+    // Ensure the project has both _id and id fields properly set
+    const projectWithId = {
+      ...project.toJSON(),
+      id: project._id.toString(),
+      _id: project._id.toString()
+    };
+    
+    res.status(200).json(projectWithId);
   } catch (error) {
     console.error('Error fetching project:', error);
-    res.status(500).json({ message: 'Server error' });
+    // More specific error handling for invalid ObjectId
+    if (error.name === 'CastError' && error.kind === 'ObjectId') {
+      return res.status(400).json({ message: 'Invalid project ID format' });
+    }
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
