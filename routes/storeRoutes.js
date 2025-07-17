@@ -1,8 +1,14 @@
 // routes/storeRoutes.js
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Store = require('../models/Store'); // Import Store model
 const { protect, authorize } = require('../middleware/auth'); // Import authentication middleware
+
+// Utility function to validate ObjectId
+const isValidObjectId = (id) => {
+  return mongoose.Types.ObjectId.isValid(id);
+};
 
 /**
  * @route POST /api/stores
@@ -55,6 +61,13 @@ router.get('/', async (req, res) => {
 // For testing - comment above and use below (remove protect middleware)
 router.get('/:id', async (req, res) => {
   try {
+    // Validate id is a valid ObjectId
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ 
+        message: 'Invalid store ID format. Expected a valid ObjectId but received: ' + req.params.id 
+      });
+    }
+
     const store = await Store.findById(req.params.id)
       .populate('managerId', 'name email') // Populate manager details
       .populate('improvementPoints.addedById', 'name email') // Populate who added improvement points
@@ -81,6 +94,13 @@ router.get('/:id', async (req, res) => {
 // For testing - comment above and use below (remove protect middleware)
 router.put('/:id', async (req, res) => {
   try {
+    // Validate id is a valid ObjectId
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ 
+        message: 'Invalid store ID format. Expected a valid ObjectId but received: ' + req.params.id 
+      });
+    }
+
     const updatedStore = await Store.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -109,6 +129,13 @@ router.put('/:id', async (req, res) => {
 // For testing - comment above and use below (remove protect middleware)
 router.delete('/:id', async (req, res) => {
   try {
+    // Validate id is a valid ObjectId
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ 
+        message: 'Invalid store ID format. Expected a valid ObjectId but received: ' + req.params.id 
+      });
+    }
+
     const deletedStore = await Store.findByIdAndDelete(req.params.id);
 
     if (!deletedStore) {
