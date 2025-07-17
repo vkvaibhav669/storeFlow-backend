@@ -158,4 +158,14 @@ const StoreProjectSchema = new mongoose.Schema({
   timestamps: true // Automatically adds createdAt and updatedAt fields
 });
 
+// Ensure virtual id field is included in JSON responses
+StoreProjectSchema.set('toJSON', {
+  transform: function(doc, ret) {
+    // Ensure both _id and id are available
+    ret.id = ret._id.toString();
+    ret._id = ret._id.toString();
+    return ret;
+  }
+});
+
 module.exports = mongoose.model('StoreProject', StoreProjectSchema, 'projects');
