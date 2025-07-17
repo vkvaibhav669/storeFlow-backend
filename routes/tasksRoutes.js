@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const StoreProject = require('../models/StoreProject');
 const { protect } = require('../middleware/auth');
 
@@ -17,6 +18,16 @@ router.post('/:projectId', async (req, res) => {
     const { projectId } = req.params;
     const taskData = req.body;
 
+    // Validate the projectId parameter
+    if (!projectId || projectId === 'undefined' || projectId === 'null') {
+      return res.status(400).json({ message: 'Invalid project ID provided' });
+    }
+    
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(projectId)) {
+      return res.status(400).json({ message: 'Invalid project ID format' });
+    }
+
     const project = await StoreProject.findById(projectId);
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
@@ -28,6 +39,10 @@ router.post('/:projectId', async (req, res) => {
     res.status(201).json(project.tasks[project.tasks.length - 1]);
   } catch (error) {
     console.error('Error adding task:', error);
+    // More specific error handling for invalid ObjectId
+    if (error.name === 'CastError' && error.kind === 'ObjectId') {
+      return res.status(400).json({ message: 'Invalid project ID format' });
+    }
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -45,6 +60,17 @@ router.post('/:projectId', async (req, res) => {
 router.get('/:projectId', async (req, res) => {
   try {
     const { projectId } = req.params;
+
+    // Validate the projectId parameter
+    if (!projectId || projectId === 'undefined' || projectId === 'null') {
+      return res.status(400).json({ message: 'Invalid project ID provided' });
+    }
+    
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(projectId)) {
+      return res.status(400).json({ message: 'Invalid project ID format' });
+    }
+
     const project = await StoreProject.findById(projectId, 'tasks');
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
@@ -52,6 +78,10 @@ router.get('/:projectId', async (req, res) => {
     res.json(project.tasks);
   } catch (error) {
     console.error('Error fetching tasks:', error);
+    // More specific error handling for invalid ObjectId
+    if (error.name === 'CastError' && error.kind === 'ObjectId') {
+      return res.status(400).json({ message: 'Invalid project ID format' });
+    }
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -75,7 +105,13 @@ router.get('/filter', async (req, res) => {
 
     // Build the filter for projects
     const projectQuery = {};
-    if (projectId) projectQuery._id = projectId;
+    if (projectId) {
+      // Validate ObjectId format if projectId is provided
+      if (!mongoose.Types.ObjectId.isValid(projectId)) {
+        return res.status(400).json({ message: 'Invalid project ID format' });
+      }
+      projectQuery._id = projectId;
+    }
 
     // Find projects matching projectId (if provided)
     const projects = await StoreProject.find(projectQuery);
@@ -95,6 +131,10 @@ router.get('/filter', async (req, res) => {
     res.status(200).json(filteredTasks);
   } catch (error) {
     console.error('Error filtering tasks:', error);
+    // More specific error handling for invalid ObjectId
+    if (error.name === 'CastError' && error.kind === 'ObjectId') {
+      return res.status(400).json({ message: 'Invalid project ID format' });
+    }
     res.status(500).json({ message: 'Server error' });
   }
 });
