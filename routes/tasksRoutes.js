@@ -6,7 +6,7 @@ const { protect } = require('../middleware/auth');
 
 // Add a new task to a project
 /**
- * @route GET /api/tasks/:projectId
+ * @route POST /api/tasks/:projectId
  * @description Add a new task to a specific project
  * @access Private
  * Example: /api/tasks/filter?projectId=123&department=Sales&priority=High
