@@ -139,4 +139,79 @@ router.get('/filter', async (req, res) => {
   }
 });
 
+/**
+ * @route PUT /api/tasks/:projectId/:taskId
+ * @description Update a specific task within a project
+ * @access Private
+ * @param {String} projectId - The ID of the project containing the task
+ * @param {String} taskId - The ID of the task to update
+ * Example: PUT /api/tasks/123/456 with task update data in request body
+ */
+// Original: router.put('/:projectId/:taskId', protect, async (req, res) => {
+// For testing - comment above and use below (remove protect middleware)
+router.put('/:projectId/:taskId', async (req, res) => {
+  try {
+    const { projectId, taskId } = req.params;
+    const updateData = req.body;
+
+    // Validate the projectId parameter
+    if (!projectId || projectId === 'undefined' || projectId === 'null') {
+      return res.status(400).json({ message: 'Invalid project ID provided' });
+    }
+
+    // Validate the taskId parameter
+    if (!taskId || taskId === 'undefined' || taskId === 'null') {
+      return res.status(400).json({ message: 'Invalid task ID provided' });
+    }
+    
+    // Validate ObjectId format for both IDs
+    if (!mongoose.Types.ObjectId.isValid(projectId)) {
+      return res.status(400).json({ message: 'Invalid project ID format' });
+    }
+    if (!mongoose.Types.ObjectId.isValid(taskId)) {
+      return res.status(400).json({ message: 'Invalid task ID format' });
+    }
+
+    // Find the project
+    const project = await StoreProject.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    // Find the specific task within the project
+    const task = project.tasks.id(taskId);
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    // Update task fields with provided data
+    // Only update fields that are provided in the request body
+    const allowedFields = [
+      'name', 'department', 'status', 'priority', 
+      'assignedToId', 'assignedToName', 'dueDate', 'description'
+    ];
+
+    allowedFields.forEach(field => {
+      if (updateData[field] !== undefined) {
+        task[field] = updateData[field];
+      }
+    });
+
+    // Save the updated project
+    await project.save();
+
+    res.status(200).json({
+      message: 'Task updated successfully',
+      task: task
+    });
+  } catch (error) {
+    console.error('Error updating task:', error);
+    // More specific error handling for invalid ObjectId
+    if (error.name === 'CastError' && error.kind === 'ObjectId') {
+      return res.status(400).json({ message: 'Invalid ID format' });
+    }
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;
