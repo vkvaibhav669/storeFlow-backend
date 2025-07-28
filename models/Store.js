@@ -34,7 +34,7 @@ const StoreTaskSchema = new mongoose.Schema({
     enum: ["High", "Medium", "Low", "None"],
     default: "None"
   },
-  createdById: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  //createdById: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   createdBy: { type: String, required: true },
   createdAt: { type: Date, default: Date.now, required: true },
   dueDate: { type: Date }
