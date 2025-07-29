@@ -93,12 +93,12 @@ This implementation adds comment functionality to projects in the StoreFlow back
 
 ### Get Project Comments
 ```bash
-curl -X GET http://0.0.0.0:8000/api/projects/507f1f77bcf86cd799439011/comments
+curl -X GET http://:8000/api/projects/507f1f77bcf86cd799439011/comments
 ```
 
 ### Add Project Comment
 ```bash
-curl -X POST http://0.0.0.0:8000/api/projects/507f1f77bcf86cd799439011/comments \
+curl -X POST http://:8000/api/projects/507f1f77bcf86cd799439011/comments \
   -H "Content-Type: application/json" \
   -d '{
     "text": "This is a great project update!",
