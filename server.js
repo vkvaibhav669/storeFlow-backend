@@ -29,7 +29,7 @@ app.use(cors()); // allows requests from any origin
 
 // OR restrict to a specific origin like this:
 app.use(cors({
-  origin: 'http://localhost:3000'
+  origin: 'http://3.109.154.71:3000'
 }));
 
 // Middleware to parse JSON request bodies
@@ -63,8 +63,8 @@ app.use((err, req, res, next) => {
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`Access API at http://localhost:${PORT}`);
-  console.log(`Register: POST http://localhost:${PORT}/api/auth/register`);
-  console.log(`Login: POST http://localhost:${PORT}/api/auth/login`);
-  console.log(`Protected routes (e.g., Get All Users): GET http://localhost:${PORT}/api/users (requires Bearer token)`);
+  console.log(`Access API at http://3.109.154.71:${PORT}`);
+  console.log(`Register: POST http://3.109.154.71:${PORT}/api/auth/register`);
+  console.log(`Login: POST http://3.109.154.71:${PORT}/api/auth/login`);
+  console.log(`Protected routes (e.g., Get All Users): GET http://3.109.154.71:${PORT}/api/users (requires Bearer token)`);
 });
