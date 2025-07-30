@@ -9,8 +9,6 @@ const { protect, authorize } = require('../middleware/auth'); // Import authenti
  * @description Create a new store project
  * @access Private/Admin
  */
-// Original: router.post('/', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
-// For testing - comment above and use below (remove protect middleware)
 router.post('/', async (req, res) => {
   try {
     const newProject = new StoreProject(req.body);
@@ -25,9 +23,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-//router.get('/', protect, async (req, res) => {
- // .populate('tasks.comments.authorId', 'name email') // Populate task comment authors
-// .populate('discussion.authorId', 'name email'); // Populate discussion comment authors
+
 /**
  * @route GET /api/projects
  * @description Get all store projects
@@ -62,8 +58,6 @@ router.post('/', async (req, res) => {
  * @description Get a single store project by ID
  * @access Private
  */
-// Original: router.get('/:id', protect, async (req, res) => {
-// For testing - comment above and use below (remove protect middleware)
 router.get('/:id', async (req, res) => {
   try {
     // Validate the ID parameter
@@ -112,8 +106,6 @@ router.get('/:id', async (req, res) => {
  * @description Update a store project by ID
  * @access Private/Admin
  */
-// Original: router.put('/:id', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
-// For testing - comment above and use below (remove protect middleware)
 router.put('/:id', async (req, res) => {
   try {
     const updatedProject = await StoreProject.findByIdAndUpdate(
@@ -140,8 +132,6 @@ router.put('/:id', async (req, res) => {
  * @description Delete a store project by ID
  * @access Private/Admin
  */
-// Original: router.delete('/:id', protect, authorize('Admin', 'SuperAdmin'), async (req, res) => {
-// For testing - comment above and use below (remove protect middleware)
 router.delete('/:id', async (req, res) => {
   try {
     const deletedProject = await StoreProject.findByIdAndDelete(req.params.id);
