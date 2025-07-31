@@ -1,33 +1,26 @@
-# Comments are provided throughout this file to help you get started.
-# If you need more help, visit the Docker Compose reference guide at
-# https://docs.docker.com/go/compose-spec-reference/
+version: '3.8'
 
 services:
-  server:
-    build:
-      context: .
+  storeflow-backend:
+    build: .
+    ports:
+      - "8000:8000"
     environment:
       NODE_ENV: development
-    ports:
-      - 8000:8000
-
-  mongodb:
-    image: mongo:7.0
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: examplepassword
-    ports:
-      - 27017:27017
-
-  mongo-express:
-    image: mongo-express
-    environment:
-      ME_CONFIG_MONGODB_SERVER: mongodb
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: examplepassword
-      ME_CONFIG_BASICAUTH_USERNAME: admin
-      ME_CONFIG_BASICAUTH_PASSWORD: strongpassword
-    ports:
-      - 8081:8081
+      PORT: 8000
+      MONGODB_URI: mongodb://mongo:27017/storeflow # Update this line
+    volumes:
+      - .:/usr/src/app
+    command: ["npm", "start"]
     depends_on:
-      - mongodb
+      - mongo # Add this line
+
+  mongo: # Add this service
+    image: mongo:latest
+    ports:
+      - "27017:27017" # Optional: Map port to host if you need to access MongoDB from your machine
+    volumes:
+      - mongo-data:/data/db # Optional: Persist data
+
+volumes: # Add this
+  mongo-data: # Add this
