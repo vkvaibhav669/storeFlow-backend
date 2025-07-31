@@ -25,7 +25,7 @@ const PORT = process.env.PORT || 8000;
 app.use(cors()); // allows requests from any origin
 // OR restrict to a specific origin like this:
 app.use(cors({
-  origin: 'http://:8000'
+  origin: 'http://3.109.154.71:3000' 
 }));
 app.use(express.json()); 
 if (process.env.NODE_ENV === 'production') {
