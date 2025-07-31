@@ -17,6 +17,10 @@ const commentsRepliesRoutes = require('./routes/commentsReplies');
 // const mongoExpress = require('mongo-express');
 const app = express();
 const PORT = process.env.PORT || 8000;
+//var mongo_express = require('mongo-express/lib/middleware')
+//var mongo_express_config = require('./mongo_express_config')
+
+//app.use('/mongo_express', mongo_express(mongo_express_config))
 // app.use('/mongo-express', mongoExpressMiddleware);
 app.use(cors()); // allows requests from any origin
 // OR restrict to a specific origin like this:

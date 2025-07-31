@@ -20,7 +20,7 @@
     "ee-first": "^1.1.1",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mongo-express": "^1.1.0-rc-3",
+    "mongo-express": "github:mongo-express/mongo-express",
     "mongoose": "^8.16.0"
   }
 }
