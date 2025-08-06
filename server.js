@@ -3,8 +3,8 @@ require('dotenv').config(); // Load environment variables from .env file
 const express = require('express');
 const connectDB = require('./config/db'); // Import DB connection function
 const bodyParser = require('body-parser'); // For parsing request bodies
-//.mongodb.connectionString = process.env.MONGODB_URI;
 const cors = require('cors');
+
 // Import API routes
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
@@ -14,24 +14,37 @@ const approvalRequestRoutes = require('./routes/approvalRequestRoutes');
 const taskRoutes = require('./routes/tasksRoutes');
 const taskCommentRoutes = require('./routes/taskCommentRoutes');
 const commentsRepliesRoutes = require('./routes/commentsReplies');
-// const mongoExpress = require('mongo-express');
+
 const app = express();
 const PORT = process.env.PORT || 8000;
-//var mongo_express = require('mongo-express/lib/middleware')
-//var mongo_express_config = require('./mongo_express_config')
 
-//app.use('/mongo_express', mongo_express(mongo_express_config))
-// app.use('/mongo-express', mongoExpressMiddleware);
-app.use(cors()); // allows requests from any origin
-// OR restrict to a specific origin like this:
-app.use(cors({
-  origin: 'http://3.109.154.71:3000' 
-}));
-app.use(express.json()); 
+// Connect to the database
+connectDB();
+
+// Middleware for parsing JSON request bodies
+app.use(express.json());
+
+// Conditional CORS configuration based on NODE_ENV
+if (process.env.NODE_ENV === 'production') {
+  console.log('CORS configured for production origin.');
+  app.use(cors({
+    origin: 'http://3.109.154.71:3000' // Specific origin for production
+  }));
+} else {
+  console.log('CORS configured for all origins (development/testing).');
+  app.use(cors()); // Allow all origins for development and testing
+}
+
+// Conditional middleware application based on NODE_ENV
 if (process.env.NODE_ENV === 'production') {
   const { protect } = require('./middleware/auth');
   app.use('/api/users', protect); // Apply protection to /api/users route in production
+  console.log('Auth protection applied for production environment.');
+} else {
+  console.log('Auth protection skipped for development/testing environment.');
 }
+
+// API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/stores', storeRoutes);
@@ -40,26 +53,20 @@ app.use('/api/approval-requests', approvalRequestRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/task-comments', taskCommentRoutes);
 app.use('/api/comment-replies', commentsRepliesRoutes);
-app.use('/api/tasks/filter', taskRoutes); 
-// const mongoExpressConfig = mongoExpress.config || {};
-// mongoExpressConfig.mongodb = mongoExpressConfig.mongodb || {};
-// mongoExpressConfig.mongodb.connectionString = process.env.MONGODB_URI;
- 
-// mongoExpressConfig.basicAuth = {};
-// mongoExpressConfig.basicAuth.username = 'adminFranchiseKisna';
-// mongoExpressConfig.basicAuth.password = '7817AdminDiamond'; 
-// mongoExpressConfig.mongodb.connectionString = process.env.MONGODB_URI;
+app.use('/api/tasks/filter', taskRoutes);
 
-connectDB();
+// Root endpoint
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
-// --- Error Handling Middleware (Optional, but recommended for production) ---
+
+// --- Error Handling Middleware ---
 app.use((err, req, res, next) => {
   console.error(err.stack); // Log the error stack to console
   res.status(500).send('Something broke!'); // Send a generic error response
 });
+
+// Start the server
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
-  // ... (your existing console logs)
+  console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
 });
