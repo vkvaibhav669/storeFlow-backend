@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const StoreProject = require('../models/StoreProject'); // Import StoreProject model
 const { protect, authorize } = require('../middleware/auth'); // Import authentication middleware
+const mongoose = require('mongoose'); // Import mongoose for ObjectId validation
 
 /**
  * @route POST /api/projects
@@ -66,7 +67,6 @@ router.get('/:id', async (req, res) => {
     }
     
     // Validate ObjectId format
-    const mongoose = require('mongoose');
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ message: 'Invalid project ID format' });
     }
@@ -77,7 +77,8 @@ router.get('/:id', async (req, res) => {
       .populate('tasks.comments.authorId', 'name email')
       .populate('documents.uploadedById', 'name email')
       .populate('blockers.reportedById', 'name email')
-      .populate('discussion.authorId', 'name email');
+      .populate('discussion.addedById', 'name email') // Populate author of top-level comments
+      .populate('discussion.replies.addedById', 'name email'); // Populate author of replies
 
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
@@ -148,7 +149,7 @@ router.delete('/:id', async (req, res) => {
 
 /**
  * @route GET /api/projects/:id/comments
- * @description Get all comments for a specific project
+ * @description Get all comments for a specific project, including nested replies
  * @access Private
  */
 router.get('/:id/comments', async (req, res) => {
@@ -159,13 +160,30 @@ router.get('/:id/comments', async (req, res) => {
     }
     
     // Validate ObjectId format
-    const mongoose = require('mongoose');
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ message: 'Invalid project ID format' });
     }
 
     const project = await StoreProject.findById(req.params.id)
-      .populate('discussion.addedById', 'name email')
+      .populate({
+        path: 'discussion',
+        populate: [
+          { path: 'addedById', select: 'name email' }, // Populate author of top-level comment
+          {
+            path: 'replies', // Populate the replies array within each discussion comment
+            populate: [
+              { path: 'addedById', select: 'name email' }, // Populate author of first-level reply
+              {
+                path: 'replies', // Populate the replies array within the first-level reply
+                populate: {
+                  path: 'addedById',
+                  select: 'name email' // Populate author of second-level reply (sub-comment)
+                }
+              }
+            ]
+          }
+        ]
+      })
       .select('discussion name location');
 
     if (!project) {
@@ -189,7 +207,7 @@ router.get('/:id/comments', async (req, res) => {
 
 /**
  * @route POST /api/projects/:id/comments
- * @description Add a new comment to a specific project
+ * @description Add a new top-level comment to a specific project
  * @access Private
  */
 router.post('/:id/comments', async (req, res) => {
@@ -200,7 +218,6 @@ router.post('/:id/comments', async (req, res) => {
     }
     
     // Validate ObjectId format
-    const mongoose = require('mongoose');
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ message: 'Invalid project ID format' });
     }
@@ -250,6 +267,99 @@ router.post('/:id/comments', async (req, res) => {
     console.error('Error adding project comment:', error);
     if (error.name === 'CastError' && error.kind === 'ObjectId') {
       return res.status(400).json({ message: 'Invalid project ID format' });
+    }
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ message: error.message, errors: error.errors });
+    }
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+/**
+ * @route POST /api/projects/:id/comments/:commentId
+ * @description Add a reply to a specific comment within a project
+ * @access Private
+ */
+router.post('/:id/comments/:commentId', async (req, res) => {
+  try {
+    const { id: projectId, commentId } = req.params;
+    const { text, addedById, addedByName } = req.body;
+
+    // 1. Validate IDs
+    if (!projectId || !mongoose.Types.ObjectId.isValid(projectId)) {
+      return res.status(400).json({ message: 'Invalid project ID provided' });
+    }
+    if (!commentId || !mongoose.Types.ObjectId.isValid(commentId)) {
+      return res.status(400).json({ message: 'Invalid comment ID provided' });
+    }
+
+    // 2. Validate required fields for the reply
+    if (!text || !addedById || !addedByName) {
+      return res.status(400).json({ 
+        message: 'Missing required fields: text, addedById, and addedByName for reply' 
+      });
+    }
+    if (!mongoose.Types.ObjectId.isValid(addedById)) {
+      return res.status(400).json({ message: 'Invalid addedById format for reply' });
+    }
+
+    // 3. Find the project
+    const project = await StoreProject.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    // 4. Find the parent comment and add the reply
+    let parentCommentFound = false;
+    let addedReply = null;
+
+    // Recursive function to find the comment and add a reply
+    const findAndAddReply = (commentsArray) => {
+      for (let i = 0; i < commentsArray.length; i++) {
+        const currentComment = commentsArray[i];
+        if (currentComment._id.toString() === commentId) {
+          const newReply = {
+            text: text.trim(),
+            addedById: addedById,
+            addedByName: addedByName.trim(),
+            addedAt: new Date(),
+            replies: [] // Replies to replies
+          };
+          currentComment.replies.push(newReply);
+          addedReply = newReply; // Store the newly added reply
+          parentCommentFound = true;
+          return true; // Stop searching
+        }
+        // If the current comment has replies, search within them
+        if (currentComment.replies && currentComment.replies.length > 0) {
+          if (findAndAddReply(currentComment.replies)) {
+            return true; // Reply added in a nested level
+          }
+        }
+      }
+      return false;
+    };
+
+    findAndAddReply(project.discussion);
+
+    if (!parentCommentFound) {
+      return res.status(404).json({ message: 'Parent comment not found' });
+    }
+
+    // 5. Save the updated project
+    await project.save();
+
+    res.status(201).json({
+      message: 'Reply added successfully',
+      reply: addedReply,
+      projectId: project._id,
+      parentCommentId: commentId
+    });
+
+  } catch (error) {
+    console.error('Error adding reply to project comment:', error);
+    if (error.name === 'CastError' && error.kind === 'ObjectId') {
+      return res.status(400).json({ message: 'Invalid ID format in parameters' });
     }
     if (error.name === 'ValidationError') {
       return res.status(400).json({ message: error.message, errors: error.errors });
