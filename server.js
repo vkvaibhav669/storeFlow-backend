@@ -23,16 +23,19 @@ connectDB();
 
 // Middleware for parsing JSON request bodies
 app.use(express.json());
+ 
+// origin: 'http://3.109.154.71:3000' // Specific origin for production
+
 
 // Conditional CORS configuration based on NODE_ENV
 if (process.env.NODE_ENV === 'production') {
   console.log('CORS configured for production origin.');
   app.use(cors({
-    origin: 'http://3.109.154.71:3000' // Specific origin for production
+   origin: 'http://3.109.154.71:3000'
   }));
 } else {
   console.log('CORS configured for all origins (development/testing).');
-  app.use(cors()); // Allow all origins for development and testing
+  app.use(cors('http://localhost:3000')); // Allow all origins for development and testing
 }
 
 // Conditional middleware application based on NODE_ENV
@@ -54,7 +57,7 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/task-comments', taskCommentRoutes);
 app.use('/api/comment-replies', commentsRepliesRoutes);
 app.use('/api/tasks/filter', taskRoutes);
-
+app.use('/api/projects/:id/documents', projectRoutes);
 // Root endpoint
 app.get('/', (req, res) => {
   res.send('API is running...');
