@@ -14,6 +14,7 @@ const approvalRequestRoutes = require('./routes/approvalRequestRoutes');
 const taskRoutes = require('./routes/tasksRoutes');
 const taskCommentRoutes = require('./routes/taskCommentRoutes');
 const commentsRepliesRoutes = require('./routes/commentsReplies');
+const projectMilestoneBlockerRoutes = require('./routes/projectMilestoneBlockerRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -58,6 +59,7 @@ app.use('/api/task-comments', taskCommentRoutes);
 app.use('/api/comment-replies', commentsRepliesRoutes);
 app.use('/api/tasks/filter', taskRoutes);
 app.use('/api/projects/:id/documents', projectRoutes);
+app.use('/api/projects/:id/milestones/blockers', projectMilestoneBlockerRoutes);
 // Root endpoint
 app.get('/', (req, res) => {
   res.send('API is running...');

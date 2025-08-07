@@ -80,8 +80,8 @@ router.get('/:id', async (req, res) => {
       .populate('tasks.comments.authorId', 'name email')
       .populate('documents.uploadedById', 'name email')
       .populate('blockers.reportedById', 'name email')
-      .populate('discussion.addedById', 'name email') // Populate author of top-level comments
-      .populate('discussion.replies.addedById', 'name email'); // Populate author of replies
+      .populate('discussion.authorId', 'name email') // Populate author of top-level comments
+      .populate('discussion.replies.authorId', 'name email'); // Populate author of replies
 
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
@@ -226,16 +226,16 @@ router.post('/:id/comments', async (req, res) => {
     }
 
     // Validate required fields
-    const { text, addedById, addedByName } = req.body;
-    if (!text || !addedById || !addedByName) {
+    const { text, authorId, author } = req.body;
+    if (!text || !authorId || !author) {
       return res.status(400).json({ 
-        message: 'Missing required fields: text, addedById, and addedByName are required' 
+        message: 'Missing required fields: text, authorId, and author are required' 
       });
     }
 
-    // Validate addedById format
-    if (!mongoose.Types.ObjectId.isValid(addedById)) {
-      return res.status(400).json({ message: 'Invalid addedById format' });
+    // Validate authorId format
+    if (!mongoose.Types.ObjectId.isValid(authorId)) {
+      return res.status(400).json({ message: 'Invalid authorId format' });
     }
 
     const project = await StoreProject.findById(req.params.id);
@@ -246,8 +246,8 @@ router.post('/:id/comments', async (req, res) => {
     // Create new comment
     const newComment = {
       text: text.trim(),
-      addedById: addedById,
-      addedByName: addedByName.trim(),
+      authorId: authorId,
+      author: author.trim(),
       addedAt: new Date(),
       replies: []
     };
@@ -286,7 +286,7 @@ router.post('/:id/comments', async (req, res) => {
 router.post('/:id/comments/:commentId', async (req, res) => {
   try {
     const { id: projectId, commentId } = req.params;
-    const { text, addedById, addedByName } = req.body;
+    const { text, authorId, author } = req.body;
 
     // 1. Validate IDs
     if (!projectId || !mongoose.Types.ObjectId.isValid(projectId)) {
@@ -297,13 +297,13 @@ router.post('/:id/comments/:commentId', async (req, res) => {
     }
 
     // 2. Validate required fields for the reply
-    if (!text || !addedById || !addedByName) {
+    if (!text || !authorId || !author) {
       return res.status(400).json({ 
-        message: 'Missing required fields: text, addedById, and addedByName for reply' 
+        message: 'Missing required fields: text, authorId, and author for reply' 
       });
     }
-    if (!mongoose.Types.ObjectId.isValid(addedById)) {
-      return res.status(400).json({ message: 'Invalid addedById format for reply' });
+    if (!mongoose.Types.ObjectId.isValid(authorId)) {
+      return res.status(400).json({ message: 'Invalid authorId format for reply' });
     }
 
     // 3. Find the project
@@ -323,8 +323,8 @@ router.post('/:id/comments/:commentId', async (req, res) => {
         if (currentComment._id.toString() === commentId) {
           const newReply = {
             text: text.trim(),
-            addedById: addedById,
-            addedByName: addedByName.trim(),
+            authorId: authorId,
+            author: author.trim(),
             addedAt: new Date(),
             replies: [] // Replies to replies
           };
@@ -589,16 +589,16 @@ router.post('/:id/comments', async (req, res) => {
     }
 
     // Validate required fields
-    const { text, addedById, addedByName } = req.body;
-    if (!text || !addedById || !addedByName) {
+    const { text, authorId, author } = req.body;
+    if (!text || !authorId || !author) {
       return res.status(400).json({ 
-        message: 'Missing required fields: text, addedById, and addedByName are required' 
+        message: 'Missing required fields: text, authorId, and author are required' 
       });
     }
 
-    // Validate addedById format
-    if (!mongoose.Types.ObjectId.isValid(addedById)) {
-      return res.status(400).json({ message: 'Invalid addedById format' });
+    // Validate authorId format
+    if (!mongoose.Types.ObjectId.isValid(authorId)) {
+      return res.status(400).json({ message: 'Invalid authorId format' });
     }
 
     const project = await StoreProject.findById(req.params.id);
@@ -609,8 +609,8 @@ router.post('/:id/comments', async (req, res) => {
     // Create new comment
     const newComment = {
       text: text.trim(),
-      addedById: addedById,
-      addedByName: addedByName.trim(),
+      authorId: authorId,
+      author: author.trim(),
       addedAt: new Date(),
       replies: []
     };
@@ -649,7 +649,7 @@ router.post('/:id/comments', async (req, res) => {
 router.post('/:id/comments/:commentId', async (req, res) => {
   try {
     const { id: projectId, commentId } = req.params;
-    const { text, addedById, addedByName } = req.body;
+    const { text, authorId, author } = req.body;
 
     // 1. Validate IDs
     if (!projectId || !mongoose.Types.ObjectId.isValid(projectId)) {
@@ -660,13 +660,13 @@ router.post('/:id/comments/:commentId', async (req, res) => {
     }
 
     // 2. Validate required fields for the reply
-    if (!text || !addedById || !addedByName) {
+    if (!text || !authorId || !author) {
       return res.status(400).json({ 
-        message: 'Missing required fields: text, addedById, and addedByName for reply' 
+        message: 'Missing required fields: text, authorId, and author for reply' 
       });
     }
-    if (!mongoose.Types.ObjectId.isValid(addedById)) {
-      return res.status(400).json({ message: 'Invalid addedById format for reply' });
+    if (!mongoose.Types.ObjectId.isValid(authorId)) {
+      return res.status(400).json({ message: 'Invalid authorId format for reply' });
     }
 
     // 3. Find the project
@@ -686,8 +686,8 @@ router.post('/:id/comments/:commentId', async (req, res) => {
         if (currentComment._id.toString() === commentId) {
           const newReply = {
             text: text.trim(),
-            addedById: addedById,
-            addedByName: addedByName.trim(),
+            authorId: authorId,
+            author: author.trim(),
             addedAt: new Date(),
             replies: [] // Replies to replies
           };
@@ -1027,16 +1027,16 @@ router.post('/:id/comments', async (req, res) => {
     }
 
     // Validate required fields
-    const { text, addedById, addedByName } = req.body;
-    if (!text || !addedById || !addedByName) {
+    const { text, authorId, author } = req.body;
+    if (!text || !authorId || !author) {
       return res.status(400).json({ 
-        message: 'Missing required fields: text, addedById, and addedByName are required' 
+        message: 'Missing required fields: text, authorId, and author are required' 
       });
     }
 
-    // Validate addedById format
-    if (!mongoose.Types.ObjectId.isValid(addedById)) {
-      return res.status(400).json({ message: 'Invalid addedById format' });
+    // Validate authorId format
+    if (!mongoose.Types.ObjectId.isValid(authorId)) {
+      return res.status(400).json({ message: 'Invalid authorId format' });
     }
 
     const project = await StoreProject.findById(req.params.id);
@@ -1047,8 +1047,8 @@ router.post('/:id/comments', async (req, res) => {
     // Create new comment
     const newComment = {
       text: text.trim(),
-      addedById: addedById,
-      addedByName: addedByName.trim(),
+      authorId: authorId,
+      author: author.trim(),
       addedAt: new Date(),
       replies: []
     };
@@ -1087,7 +1087,7 @@ router.post('/:id/comments', async (req, res) => {
 router.post('/:id/comments/:commentId', async (req, res) => {
   try {
     const { id: projectId, commentId } = req.params;
-    const { text, addedById, addedByName } = req.body;
+    const { text, authorId, author } = req.body;
 
     // 1. Validate IDs
     if (!projectId || !mongoose.Types.ObjectId.isValid(projectId)) {
@@ -1098,13 +1098,13 @@ router.post('/:id/comments/:commentId', async (req, res) => {
     }
 
     // 2. Validate required fields for the reply
-    if (!text || !addedById || !addedByName) {
+    if (!text || !authorId || !author) {
       return res.status(400).json({ 
-        message: 'Missing required fields: text, addedById, and addedByName for reply' 
+        message: 'Missing required fields: text, authorId, and author for reply' 
       });
     }
-    if (!mongoose.Types.ObjectId.isValid(addedById)) {
-      return res.status(400).json({ message: 'Invalid addedById format for reply' });
+    if (!mongoose.Types.ObjectId.isValid(authorId)) {
+      return res.status(400).json({ message: 'Invalid authorId format for reply' });
     }
 
     // 3. Find the project
@@ -1124,8 +1124,8 @@ router.post('/:id/comments/:commentId', async (req, res) => {
         if (currentComment._id.toString() === commentId) {
           const newReply = {
             text: text.trim(),
-            addedById: addedById,
-            addedByName: addedByName.trim(),
+            authorId: authorId,
+            author: author.trim(),
             addedAt: new Date(),
             replies: [] // Replies to replies
           };
@@ -1171,5 +1171,21 @@ router.post('/:id/comments/:commentId', async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 module.exports = router;
