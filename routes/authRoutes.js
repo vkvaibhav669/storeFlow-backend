@@ -3,13 +3,43 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken'); // For generating JWTs
 const User = require('../models/User'); // Import User model
+const mongoose = require('mongoose');
 
 // Helper function to generate a JWT token
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '7h', // Token expires in 1 hour
+    expiresIn: '1h', // Token expires in 1 hour
   });
 };
+const userSchema = new mongoose.Schema({
+  name: String,
+  email: { type: String, unique: true },
+  password: String, // Store hashed password!
+  role: String,
+});
+
+// Example function to add a user
+async function addUser(name, email, password, role = 'SuperAdmin') {
+  // Hash the password before saving (use bcrypt in production)
+  const user = new User({ name, email, password, role });
+  await user.save();
+  return user;
+}
+
+/**
+ * @route POST /api/auth/users
+ * @description Register a new user
+ * @access Public
+ */
+router.post('/users', async (req, res) => {
+  const { name, email, password, role } = req.body;
+  try {
+    const user = await addUser(name, email, password, role);
+    res.status(201).json(user);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
 
 /**
  * @route POST /api/auth/register
@@ -63,7 +93,11 @@ router.post('/login', async (req, res) => {
 
   try {
     // Find user by email
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
     const user = await User.findOne({ email });
+   // console.log('User found:', user);
 
     // Check if user exists and password matches
     if (user && (await user.matchPassword(password))) {
