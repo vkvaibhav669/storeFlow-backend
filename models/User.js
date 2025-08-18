@@ -27,6 +27,11 @@ const UserSchema = new mongoose.Schema({
     required: true,
     enum: ["Member", "Admin", "SuperAdmin"], // Allowed roles
     default: "Member" // Default role for new users
+  },
+  department: {
+    type: String,
+    trim: true
+    // You can add enum: [...] if you want to restrict to certain departments
   }
 }, {
   timestamps: true // Adds createdAt and updatedAt fields automatically
