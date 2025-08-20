@@ -53,4 +53,21 @@ router.get('/:filename', async (req, res) => {
   }
 });
 
+/**
+ * @route GET /api/files
+ * @description Retrieve a list of all files from the remote file server
+ * @access Private
+ */
+router.get('/', async (req, res) => {
+  try {
+    // Fetch the list of files from the remote server (replace URL with your remote server endpoint)
+    const remoteResponse = await axios.get('https://your-remote-server.com/files');
+
+    // Assuming the remote server returns an array of file metadata or filenames
+    res.status(200).json({ files: remoteResponse.data });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch files from remote server', error: error.message });
+  }
+});
+
 module.exports = router;
