@@ -97,7 +97,7 @@ const StoreProjectSchema = new mongoose.Schema({
     status: {
       type: String,
       required: true,
-      enum: ["Pending", "In Progress", "Completed", "Blocked"],
+      enum: ["Pending", "In Progress", "Completed", "Blocked", "Done"],
       default: "Pending"
     },
     priority: { type: String, enum: ["High", "Medium", "Low", "None"] },
