@@ -1,0 +1,297 @@
+openapi: 3.0.3
+info:
+  title: StoreFlow Backend API
+  version: 1.0.0
+  description: Unified API for Stores, Projects, Tasks, Milestones, Blockers, Comments, Approvals, and Files.
+servers:
+  - url: https://api.storeflow.local/api/v1
+    description: Local/Example server
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Id:
+      type: string
+      description: MongoDB ObjectId
+      example: 64b7f1d6f1a2b3c4d5e6f7a8
+    User:
+      type: object
+      properties:
+        _id: { $ref: '#/components/schemas/Id' }
+        email: { type: string }
+        name: { type: string }
+        globalRole: { type: string, enum: [superadmin, user] }
+        memberships:
+          type: array
+          items:
+            type: object
+            properties:
+              scope: { type: string, enum: [store, project] }
+              scopeId: { $ref: '#/components/schemas/Id' }
+              role: { type: string, enum: [admin, member] }
+    Store:
+      type: object
+      properties:
+        _id: { $ref: '#/components/schemas/Id' }
+        name: { type: string }
+        code: { type: string }
+        status: { type: string, enum: [planning, active, closed] }
+    Project:
+      type: object
+      properties:
+        _id: { $ref: '#/components/schemas/Id' }
+        storeId: { $ref: '#/components/schemas/Id' }
+        name: { type: string }
+        type: { type: string, enum: [setup, renovation, other] }
+        status: { type: string, enum: [not_started, in_progress, on_hold, completed, cancelled] }
+    Task:
+      type: object
+      properties:
+        _id: { $ref: '#/components/schemas/Id' }
+        projectId: { $ref: '#/components/schemas/Id' }
+        title: { type: string }
+        status: { type: string, enum: [todo, in_progress, blocked, done] }
+        priority: { type: string, enum: [low, medium, high, urgent] }
+    Milestone:
+      type: object
+      properties:
+        _id: { $ref: '#/components/schemas/Id' }
+        projectId: { $ref: '#/components/schemas/Id' }
+        title: { type: string }
+        status: { type: string, enum: [not_started, in_progress, completed] }
+    Blocker:
+      type: object
+      properties:
+        _id: { $ref: '#/components/schemas/Id' }
+        projectId: { $ref: '#/components/schemas/Id' }
+        taskId: { $ref: '#/components/schemas/Id' }
+        reason: { type: string }
+        status: { type: string, enum: [open, resolved, dismissed] }
+    Comment:
+      type: object
+      properties:
+        _id: { $ref: '#/components/schemas/Id' }
+        subjectModel: { type: string }
+        subjectId: { $ref: '#/components/schemas/Id' }
+        parentCommentId: { $ref: '#/components/schemas/Id' }
+        body: { type: string }
+    ApprovalRequest:
+      type: object
+      properties:
+        _id: { $ref: '#/components/schemas/Id' }
+        subjectModel: { type: string }
+        subjectId: { $ref: '#/components/schemas/Id' }
+        status: { type: string, enum: [pending, approved, rejected, changes_requested] }
+        approverIds:
+          type: array
+          items: { $ref: '#/components/schemas/Id' }
+    File:
+      type: object
+      properties:
+        _id: { $ref: '#/components/schemas/Id' }
+        subjectModel: { type: string }
+        subjectId: { $ref: '#/components/schemas/Id' }
+        name: { type: string }
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login to obtain JWT
+      responses:
+        '501': { description: Not implemented stub }
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh token
+      responses:
+        '501': { description: Not implemented stub }
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout
+      responses:
+        '200': { description: Success }
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Get current user
+      responses:
+        '200': 
+          description: Current user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/User' }
+  /stores:
+    get:
+      tags: [Stores]
+      summary: List stores
+      responses:
+        '200':
+          description: List of stores
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Store' }
+    post:
+      tags: [Stores]
+      summary: Create store
+      responses:
+        '201': { description: Store created }
+  /stores/{storeId}/projects:
+    get:
+      tags: [Projects]
+      summary: List projects in store
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/Id' }
+      responses:
+        '200':
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Project' }
+    post:
+      tags: [Projects]
+      summary: Create project
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/Id' }
+      responses:
+        '201': { description: Project created }
+  /stores/{storeId}/projects/{projectId}/tasks:
+    get:
+      tags: [Tasks]
+      summary: List tasks in project
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/Id' }
+        - name: projectId
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/Id' }
+      responses:
+        '200':
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Task' }
+    post:
+      tags: [Tasks]
+      summary: Create task
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/Id' }
+        - name: projectId
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/Id' }
+      responses:
+        '201': { description: Task created }
+  /comments:
+    get:
+      tags: [Comments]
+      summary: List comments (polymorphic)
+      parameters:
+        - name: subjectType
+          in: query
+          schema: { type: string }
+        - name: subjectId
+          in: query
+          schema: { $ref: '#/components/schemas/Id' }
+      responses:
+        '200':
+          description: List of comments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Comment' }
+    post:
+      tags: [Comments]
+      summary: Create comment
+      responses:
+        '201': { description: Comment created }
+  /approvals:
+    get:
+      tags: [Approvals]
+      summary: List approval requests
+      responses:
+        '200':
+          description: List of approval requests
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/ApprovalRequest' }
+    post:
+      tags: [Approvals]
+      summary: Create approval request
+      responses:
+        '201': { description: Approval request created }
+  /approvals/{approvalId}/decisions:
+    post:
+      tags: [Approvals]
+      summary: Make approval decision
+      parameters:
+        - name: approvalId
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/Id' }
+      responses:
+        '200': { description: Decision recorded }
+  /files:
+    get:
+      tags: [Files]
+      summary: List files (polymorphic)
+      responses:
+        '200':
+          description: List of files
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/File' }
+    post:
+      tags: [Files]
+      summary: Create file
+      responses:
+        '201': { description: File created }

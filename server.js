@@ -63,6 +63,9 @@ app.use('/api/projects/:id/documents', projectRoutes);
 app.use('/api/projects/:id/milestones/blockers', projectMilestoneBlockerRoutes);
 app.use('/api/files', fileUploadRoutes);
 
+// New unified StoreFlow API v1
+app.use('/api/v1', require('./src/routes'));
+
 // Root endpoint
 app.get('/', (req, res) => {
   res.send('API is running...');
