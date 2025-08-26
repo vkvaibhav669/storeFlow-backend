@@ -5,14 +5,14 @@ const bcrypt = require('bcryptjs'); // For password hashing
 // User model (merge with your existing User model fields as appropriate)
 // This file contains the explicit fields used by the new task/notification flows.
 // If your repo already has a User model, merge 'assignedTasks' and 'notifications' fields into it.
-const mongoose = require('mongoose');
+//const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   email: { type: String, required: true, trim: true, unique: true },
   password: { type: String }, // hashed password maybe
   role: { type: String },
-  department: { type: String, trim: true }
+  department: { type: String, trim: true },
   // Quick references for assigned tasks (helps the UI display assignments without scanning projects)
   assignedTasks: [{
     projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'StoreProject' },

@@ -46,7 +46,7 @@ if (process.env.NODE_ENV === 'production') {
   app.use('/api/users', protect); // Apply protection to /api/users route in production
   console.log('Auth protection applied for production environment.');
 } else {
-  console.log('Auth protection skipped for development/testing environment.');
+  console.log('Auth protection skipped for dev testing.');
 }
 
 // API routes
