@@ -127,4 +127,48 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+/**
+ * @route PUT /api/users/:id/password
+ * @description Update a user's password (requires old password validation)
+ * @access Private (Admin, SuperAdmin, Member)
+ */
+router.put('/:id/password', async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    // Validate input
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ message: 'Old password and new password are required.' });
+    }
+
+    // Find the user by ID
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Authorization: user can change their own password, or Admin/SuperAdmin can change any password
+    if (
+      req.user.role === 'Admin' ||
+      req.user.role === 'SuperAdmin' ||
+      req.user._id.toString() === user._id.toString()
+    ) {
+      // Check old password
+      const isMatch = await user.comparePassword(oldPassword);
+      if (!isMatch) {
+        return res.status(400).json({ message: 'Old password is incorrect.' });
+      }
+
+      // Set new password and save
+      user.password = newPassword;
+      await user.save();
+
+      res.status(200).json({ message: 'Password updated successfully.' });
+    } else {
+      res.status(403).json({ message: 'Not authorized to change this user\'s password.' });
+    }
+  } catch (error) {
+    console.error('Error updating password:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;
