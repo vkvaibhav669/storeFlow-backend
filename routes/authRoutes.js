@@ -97,7 +97,7 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' });
     }
     const user = await User.findOne({ email });
-   // console.log('User found:', user);
+    console.log('User found:', user);
 
     // Check if user exists and password matches
     if (user && (await user.matchPassword(password))) {
@@ -108,6 +108,7 @@ router.post('/login', async (req, res) => {
         role: user.role,
         token: generateToken(user._id), // Generate and send JWT token
       });
+      console.log('response send',res);
     } else {
       res.status(401).json({ message: 'Invalid email or password' });
     }

@@ -8,6 +8,7 @@ services:
     environment:
       PORT: 8000
       MONGODB_URI: mongodb://mongo:27017
+      JWT_SECRET: e9896fc41cd64cfd44b359f5b4cdf2a5897e94ee9a8644c3cebc52270486e93a852f8ca029c67a6c7ee22219b9fb4c057c7c13f7cb8ed104f7f140effd7341a0
     depends_on:
       - mongo
 
