@@ -3,6 +3,10 @@ const express = require('express');
 const router = express.Router();
 const ApprovalRequest = require('../models/ApprovalRequest'); // Import ApprovalRequest model
 const { protect, authorize } = require('../middleware/auth'); // Import authentication middleware
+const mongoose = require('mongoose');
+
+// Precompute commonly used schema path references to avoid ReferenceError
+const approvalCommentsPath = ApprovalRequest.schema.path('approvalComments');
 
 /**
  * @route POST /api/approval-requests
@@ -12,12 +16,40 @@ const { protect, authorize } = require('../middleware/auth'); // Import authenti
 // Original: router.post('/', protect, async (req, res) => {
 // For testing - comment above and use below (remove protect middleware)
 router.post('/', async (req, res) => {
-  // Note: requestorId and requestorName will need to be manually set for testing without auth
-  // req.body.requestorId = req.user._id;
-  // req.body.requestorName = req.user.name;
-
   try {
-    const newApprovalRequest = new ApprovalRequest(req.body);
+    let { requester, requestorId, requestorName, title, status, ...rest } = req.body;
+
+    // normalize requester id
+    let requesterId = requester || requestorId || req.body.requesterId || req.body.requestorId;
+    if (requesterId && typeof requesterId === 'object') {
+      requesterId = requesterId.id || requesterId._id || requesterId.requesterId || requesterId.requestorId;
+    }
+
+    if (!title) return res.status(400).json({ message: 'title is required' });
+    if (!requesterId || !mongoose.Types.ObjectId.isValid(requesterId)) {
+      return res.status(400).json({ message: 'requester/requestorId is required and must be a valid ObjectId' });
+    }
+
+    // Validate / normalize status against schema enum
+    const statusEnum = ApprovalRequest.schema.path('status')?.enumValues || [];
+    if (status) {
+      if (!statusEnum.includes(status)) {
+        return res.status(400).json({ message: 'Invalid status value', allowed: statusEnum });
+      }
+    } else {
+      // if client didn't provide status, use schema enum first value (or let mongoose default)
+      status = statusEnum.length ? statusEnum[0] : undefined;
+    }
+
+    const payload = {
+      requester: new mongoose.Types.ObjectId(requesterId),
+      requesterName: requestorName || req.body.requesterName || (typeof requester === 'object' && (requester.name || requester.requestorName)) || undefined,
+      title,
+      status,
+      ...rest
+    };
+
+    const newApprovalRequest = new ApprovalRequest(payload);
     const savedApprovalRequest = await newApprovalRequest.save();
     res.status(201).json(savedApprovalRequest);
   } catch (error) {
@@ -53,15 +85,76 @@ router.get('/', async (req, res) => {
     }
     */
 
-    const approvalRequests = await ApprovalRequest.find(query)
-      .populate('requestorId', 'name email') // Populate requestor details
-      .populate('approverId', 'name email') // Populate approver details
-      .populate('projectId', 'name location') // Populate project details
-      .populate('approvalComments.authorId', 'name email'); // Populate comment authors
+    // safe conditional populate for list endpoint
+    let queryBuilder = ApprovalRequest.find(query);
 
+    if (ApprovalRequest.schema.path('requester')) {
+      queryBuilder = queryBuilder.populate('requester', 'name email');
+    }
+    if (ApprovalRequest.schema.path('approverId')) {
+      queryBuilder = queryBuilder.populate('approverId', 'name email');
+    } else if (ApprovalRequest.schema.path('approver')) {
+      queryBuilder = queryBuilder.populate('approver', 'name email');
+    }
+    if (ApprovalRequest.schema.path('projectId')) {
+      queryBuilder = queryBuilder.populate('projectId', 'name location');
+    }
+    // populate nested comment authorId if present in schema
+    if (approvalCommentsPath && approvalCommentsPath.schema && approvalCommentsPath.schema.path('authorId')) {
+      queryBuilder = queryBuilder.populate('approvalComments.authorId', 'name email');
+    }
+
+    const approvalRequests = await queryBuilder.exec();
     res.status(200).json(approvalRequests);
   } catch (error) {
     console.error('Error fetching approval requests:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+/**
+ * @route GET /api/approval-requests/mine
+ * @description Get approval requests submitted by the authenticated user
+ * @access Private
+ */
+router.get('/mine',  async (req, res) => {
+  try {
+    const userId = req.user && req.user._id;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const { status, page = 1, limit = 25, sortBy = 'createdAt', sortDir = 'desc' } = req.query;
+    const filter = { requester: userId };
+    if (status) filter.status = status;
+
+    let queryBuilder = ApprovalRequest.find(filter)
+      .sort({ [sortBy]: sortDir === 'asc' ? 1 : -1 })
+      .skip((parseInt(page, 10) - 1) * parseInt(limit, 10))
+      .limit(parseInt(limit, 10));
+
+    if (ApprovalRequest.schema.path('requester')) {
+      queryBuilder = queryBuilder.populate('requester', 'name email');
+    }
+    if (ApprovalRequest.schema.path('approverId')) {
+      queryBuilder = queryBuilder.populate('approverId', 'name email');
+    } else if (ApprovalRequest.schema.path('approver')) {
+      queryBuilder = queryBuilder.populate('approver', 'name email');
+    }
+    if (ApprovalRequest.schema.path('projectId')) {
+      queryBuilder = queryBuilder.populate('projectId', 'name location');
+    }
+    const approvalCommentsPath = ApprovalRequest.schema.path('approvalComments');
+    if (approvalCommentsPath && approvalCommentsPath.schema && approvalCommentsPath.schema.path('authorId')) {
+      queryBuilder = queryBuilder.populate('approvalComments.authorId', 'name email');
+    }
+
+    const requests = await queryBuilder.exec();
+    const total = await ApprovalRequest.countDocuments(filter);
+    res.status(200).json({
+      meta: { total, page: parseInt(page, 10), limit: parseInt(limit, 10) },
+      data: requests
+    });
+  } catch (error) {
+    console.error('Error fetching user submitted approval requests:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -71,28 +164,31 @@ router.get('/', async (req, res) => {
  * @description Get a single approval request by ID
  * @access Private
  */
-// Original: router.get('/:id', protect, async (req, res) => {
-// For testing - comment above and use below (remove protect middleware)
 router.get('/:id', async (req, res) => {
   try {
-    const approvalRequest = await ApprovalRequest.findById(req.params.id)
-      .populate('requestorId', 'name email')
-      .populate('approverId', 'name email')
-      .populate('projectId', 'name location')
-      .populate('approvalComments.authorId', 'name email');
+    // safe conditional populate for single endpoint
+    let singleQuery = ApprovalRequest.findById(req.params.id);
 
-    if (!approvalRequest) {
-      return res.status(404).json({ message: 'Approval request not found' });
+    if (ApprovalRequest.schema.path('requester')) {
+      singleQuery = singleQuery.populate('requester', 'name email');
+    }
+    if (ApprovalRequest.schema.path('approverId')) {
+      singleQuery = singleQuery.populate('approverId', 'name email');
+    } else if (ApprovalRequest.schema.path('approver')) {
+      singleQuery = singleQuery.populate('approver', 'name email');
+    }
+    if (ApprovalRequest.schema.path('projectId')) {
+      singleQuery = singleQuery.populate('projectId', 'name location');
+    }
+    const approvalCommentsPath = ApprovalRequest.schema.path('approvalComments');
+    if (approvalCommentsPath && approvalCommentsPath.schema && approvalCommentsPath.schema.path('authorId')) {
+      singleQuery = singleQuery.populate('approvalComments.authorId', 'name email');
     }
 
-    // For testing - authorization check disabled
-    // if (req.user.role === 'Admin' || req.user.role === 'SuperAdmin' ||
-    //     req.user._id.equals(approvalRequest.requestorId) ||
-    //     req.user._id.equals(approvalRequest.approverId)) {
-      res.status(200).json(approvalRequest);
-    // } else {
-    //   res.status(403).json({ message: 'Not authorized to view this approval request' });
-    // }
+    const approvalRequest = await singleQuery.exec();
+    if (!approvalRequest) return res.status(404).json({ message: 'Approval request not found' });
+
+    res.status(200).json(approvalRequest);
   } catch (error) {
     console.error('Error fetching approval request:', error);
     res.status(500).json({ message: 'Server error' });
